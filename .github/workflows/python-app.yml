@@ -1,4 +1,4 @@
-name: Build Executables
+name: Build Python App
 
 on:
   push:
@@ -7,29 +7,33 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
     steps:
-    - name: Checkout Code
+    - name: Check Out Code
       uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: 3.9
 
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller
 
-    - name: Build for Linux
+    - name: Build Executable
       run: |
         pyinstaller --onefile teste.py
       env:
         PATH: "/home/runner/.local/bin:${PATH}"
 
-    - name: Upload Linux Executable
+    - name: Upload Executable
       uses: actions/upload-artifact@v3
       with:
-        name: linux-executable
-        path: dist/teste
+        name: ${{ matrix.os }}-executable
+        path: dist/*
